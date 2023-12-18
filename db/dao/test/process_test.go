@@ -3,8 +3,10 @@ package test
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"testing"
 
+	"github.com/eventified/eventified/common"
 	"github.com/eventified/eventified/db/dao"
 	"github.com/eventified/eventified/db/model"
 )
@@ -27,6 +29,7 @@ func TestProcessDao(t *testing.T) {
 
 	p, err = dao.GetProcessByName(db, "process-100")
 	assert.NotNil(err)
+	assert.Equal(err.(*common.Error).Status, http.StatusNotFound)
 	assert.Nil(p)
 
 	err = dao.DeleteProcessByName(db, "process-1")
@@ -38,6 +41,7 @@ func TestProcessDao(t *testing.T) {
 
 	p, err = dao.GetProcessByName(db, "process-1")
 	assert.NotNil(err)
+	assert.Equal(err.(*common.Error).Status, http.StatusNotFound)
 	assert.Nil(p)
 }
 

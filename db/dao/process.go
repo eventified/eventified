@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/eventified/eventified/common"
 	"github.com/eventified/eventified/db/model"
 )
 
-func GetProcessAll(db *sql.DB) ([]*model.Process, error) {
+func GetProcessAll(db *sql.DB) ([]*model.Process, *common.Error) {
 	q := `
 		SELECT *
 		FROM processes
@@ -34,7 +35,7 @@ func GetProcessAll(db *sql.DB) ([]*model.Process, error) {
 	return ps, nil
 }
 
-func GetProcessByName(db *sql.DB, name string) (*model.Process, error) {
+func GetProcessByName(db *sql.DB, name string) (*model.Process, *common.Error) {
 	q := `
 		SELECT *
 		FROM processes
@@ -47,7 +48,7 @@ func GetProcessByName(db *sql.DB, name string) (*model.Process, error) {
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, NotFoundError{fmt.Sprintf("Not Found: process{name=%s}", name)}
+		return nil, common.NotFoundError(fmt.Sprintf("Not Found: process{name=%s}", name))
 	}
 
 	p, err := scanProcess(rows)
@@ -58,7 +59,7 @@ func GetProcessByName(db *sql.DB, name string) (*model.Process, error) {
 	return p, nil
 }
 
-func SaveProcess(db *sql.DB, p *model.Process) error {
+func SaveProcess(db *sql.DB, p *model.Process) *common.Error {
 	_, err := GetProcessByName(db, p.Name)
 	if err == nil { // exists
 		return nil // nothing to update
@@ -67,10 +68,10 @@ func SaveProcess(db *sql.DB, p *model.Process) error {
 	return insertProcess(db, p)
 }
 
-func DeleteProcessByName(db *sql.DB, name string) error {
+func DeleteProcessByName(db *sql.DB, name string) *common.Error {
 	_, err := GetProcessByName(db, name)
 	if err != nil {
-		return NotFoundError{fmt.Sprintf("Not Found: process{name=%s}", name)}
+		return err
 	}
 
 	q := `
@@ -86,24 +87,24 @@ func DeleteProcessByName(db *sql.DB, name string) error {
 	return nil
 }
 
-func insertProcess(db *sql.DB, p *model.Process) error {
+func insertProcess(db *sql.DB, p *model.Process) *common.Error {
 	q := `
 		INSERT INTO processes(name, created_at, deleted_at)
 		VALUES(?, ?, -1);
 	`
 	_, err := exec(db, q, p.Name, time.Now().UnixMilli())
 	if err != nil {
-		return err
+		return common.InternalError(err)
 	}
 
 	return nil
 }
 
-func scanProcess(rows *sql.Rows) (*model.Process, error) {
+func scanProcess(rows *sql.Rows) (*model.Process, *common.Error) {
 	var p model.Process
 	err := rows.Scan(&p.Name, &p.CreatedAt, &p.DeletedAt)
 	if err != nil {
-		return nil, err
+		return nil, common.InternalError(err)
 	}
 
 	return &p, nil

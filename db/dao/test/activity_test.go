@@ -3,8 +3,10 @@ package test
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"testing"
 
+	"github.com/eventified/eventified/common"
 	"github.com/eventified/eventified/db/dao"
 	"github.com/eventified/eventified/db/model"
 )
@@ -28,6 +30,7 @@ func TestActivityDao(t *testing.T) {
 
 	a, err = dao.GetActivityByName(db, "activity-100")
 	assert.NotNil(err)
+	assert.Equal(err.(*common.Error).Status, http.StatusNotFound)
 	assert.Nil(a)
 
 	err = dao.DeleteActivityByName(db, "activity-1")
@@ -39,6 +42,7 @@ func TestActivityDao(t *testing.T) {
 
 	a, err = dao.GetActivityByName(db, "activity-1")
 	assert.NotNil(err)
+	assert.Equal(err.(*common.Error).Status, http.StatusNotFound)
 	assert.Nil(a)
 }
 
