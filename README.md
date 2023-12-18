@@ -1,6 +1,6 @@
 # Eventify
 
-[![CI-CD](https://github.com/assalielmehdi/go-eventify/actions/workflows/pipeline.yml/badge.svg)](https://github.com/assalielmehdi/go-eventify/actions)
+[![CI-CD](https://github.com/eventified/eventified/actions/workflows/pipeline.yml/badge.svg)](https://github.com/eventified/eventified/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A lightweight application server equipped with a powerfull CLI to run event-driven backends on tiny servers.
