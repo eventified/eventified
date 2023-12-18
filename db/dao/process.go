@@ -8,23 +8,13 @@ import (
 	"github.com/eventified/eventified/db/model"
 )
 
-type ProcessDao struct {
-	db *sql.DB
-}
-
-func NewProcessDao(db *sql.DB) *ProcessDao {
-	return &ProcessDao{
-		db: db,
-	}
-}
-
-func (dao *ProcessDao) GetAll() ([]*model.Process, error) {
+func GetProcessAll(db *sql.DB) ([]*model.Process, error) {
 	q := `
 		SELECT *
 		FROM processes
 		WHERE deleted_at = -1;
 	`
-	rows, err := query(dao.db, q)
+	rows, err := query(db, q)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +23,7 @@ func (dao *ProcessDao) GetAll() ([]*model.Process, error) {
 	ps := make([]*model.Process, 0)
 
 	for rows.Next() {
-		p, err := dao.scan(rows)
+		p, err := scanProcess(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -44,13 +34,13 @@ func (dao *ProcessDao) GetAll() ([]*model.Process, error) {
 	return ps, nil
 }
 
-func (dao *ProcessDao) GetByName(name string) (*model.Process, error) {
+func GetProcessByName(db *sql.DB, name string) (*model.Process, error) {
 	q := `
 		SELECT *
 		FROM processes
 		WHERE name = ? AND deleted_at = -1;
 	`
-	rows, err := query(dao.db, q, name)
+	rows, err := query(db, q, name)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +50,7 @@ func (dao *ProcessDao) GetByName(name string) (*model.Process, error) {
 		return nil, NotFoundError{fmt.Sprintf("Not Found: process{name=%s}", name)}
 	}
 
-	p, err := dao.scan(rows)
+	p, err := scanProcess(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -68,17 +58,17 @@ func (dao *ProcessDao) GetByName(name string) (*model.Process, error) {
 	return p, nil
 }
 
-func (dao *ProcessDao) Save(p *model.Process) error {
-	_, err := dao.GetByName(p.Name)
+func SaveProcess(db *sql.DB, p *model.Process) error {
+	_, err := GetProcessByName(db, p.Name)
 	if err == nil { // exists
 		return nil // nothing to update
 	}
 
-	return dao.insert(p)
+	return insertProcess(db, p)
 }
 
-func (dao *ProcessDao) DeleteByName(name string) error {
-	_, err := dao.GetByName(name)
+func DeleteProcessByName(db *sql.DB, name string) error {
+	_, err := GetProcessByName(db, name)
 	if err != nil {
 		return NotFoundError{fmt.Sprintf("Not Found: process{name=%s}", name)}
 	}
@@ -88,7 +78,7 @@ func (dao *ProcessDao) DeleteByName(name string) error {
 		SET deleted_at = ?
 		WHERE name = ?;
 	`
-	_, err = exec(dao.db, q, time.Now().UnixMilli(), name)
+	_, err = exec(db, q, time.Now().UnixMilli(), name)
 	if err != nil {
 		return err
 	}
@@ -96,12 +86,12 @@ func (dao *ProcessDao) DeleteByName(name string) error {
 	return nil
 }
 
-func (dao *ProcessDao) insert(p *model.Process) error {
+func insertProcess(db *sql.DB, p *model.Process) error {
 	q := `
 		INSERT INTO processes(name, created_at, deleted_at)
 		VALUES(?, ?, -1);
 	`
-	_, err := exec(dao.db, q, p.Name, time.Now().UnixMilli())
+	_, err := exec(db, q, p.Name, time.Now().UnixMilli())
 	if err != nil {
 		return err
 	}
@@ -109,7 +99,7 @@ func (dao *ProcessDao) insert(p *model.Process) error {
 	return nil
 }
 
-func (dao *ProcessDao) scan(rows *sql.Rows) (*model.Process, error) {
+func scanProcess(rows *sql.Rows) (*model.Process, error) {
 	var p model.Process
 	err := rows.Scan(&p.Name, &p.CreatedAt, &p.DeletedAt)
 	if err != nil {

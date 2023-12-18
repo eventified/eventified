@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	_ "modernc.org/sqlite"
 
-	"assalielmehdi/eventify/db"
+	"github.com/eventified/eventified/db"
+	"github.com/stretchr/testify/assert"
 )
 
 func setup(t *testing.T) (*assert.Assertions, *sql.DB, func(), error) {

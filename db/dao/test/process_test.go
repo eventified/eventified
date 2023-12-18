@@ -1,11 +1,12 @@
 package test
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
-	"assalielmehdi/eventify/db/dao"
-	"assalielmehdi/eventify/db/model"
+	"github.com/eventified/eventified/db/dao"
+	"github.com/eventified/eventified/db/model"
 )
 
 func TestProcessDao(t *testing.T) {
@@ -13,41 +14,40 @@ func TestProcessDao(t *testing.T) {
 	defer teardown()
 	assert.Nil(err)
 
-	dao := dao.NewProcessDao(db)
-	generateProcesses(dao, 100)
+	generateProcesses(db, 100)
 
-	ps, err := dao.GetAll()
+	ps, err := dao.GetProcessAll(db)
 	assert.Nil(err)
 	assert.Len(ps, 100)
 
-	p, err := dao.GetByName("process-0")
+	p, err := dao.GetProcessByName(db, "process-0")
 	assert.Nil(err)
 	assert.NotNil(p)
 	assert.Equal(p.Name, "process-0")
 
-	p, err = dao.GetByName("process-100")
+	p, err = dao.GetProcessByName(db, "process-100")
 	assert.NotNil(err)
 	assert.Nil(p)
 
-	err = dao.DeleteByName("process-1")
+	err = dao.DeleteProcessByName(db, "process-1")
 	assert.Nil(err)
 
-	ps, err = dao.GetAll()
+	ps, err = dao.GetProcessAll(db)
 	assert.Nil(err)
 	assert.Len(ps, 99)
 
-	p, err = dao.GetByName("process-1")
+	p, err = dao.GetProcessByName(db, "process-1")
 	assert.NotNil(err)
 	assert.Nil(p)
 }
 
-func generateProcesses(processDao *dao.ProcessDao, n int) {
+func generateProcesses(db *sql.DB, n int) {
 	ps := make([]*model.Process, 0, n)
 
 	for i := 0; i < n; i++ {
 		ps = append(ps, &model.Process{
 			Name: fmt.Sprintf("process-%d", i),
 		})
-		processDao.Save(ps[i])
+		dao.SaveProcess(db, ps[i])
 	}
 }
