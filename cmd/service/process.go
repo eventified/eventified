@@ -1,8 +1,8 @@
 package service
 
 import (
-	"assalielmehdi/eventify/db/dao"
-	"assalielmehdi/eventify/db/model"
+	"github.com/eventified/eventified/db/dao"
+	"github.com/eventified/eventified/db/model"
 )
 
 type ProcessService struct {

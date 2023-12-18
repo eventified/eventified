@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"os"
 
-	"assalielmehdi/eventify/db/migration"
+	"github.com/eventified/eventified/db/migration"
 )
 
 func migrate(db *sql.DB) error {

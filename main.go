@@ -6,7 +6,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"assalielmehdi/eventify/db"
+	"github.com/eventified/eventified/db"
 )
 
 func main() {

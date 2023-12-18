@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"assalielmehdi/eventify/db/model"
+	"github.com/eventified/eventified/db/model"
 )
 
 type ActivityDao struct {

@@ -1,4 +1,4 @@
-module assalielmehdi/eventify
+module github.com/eventified/eventified
 
 go 1.21.4
 
